@@ -1,5 +1,5 @@
 export const GET = async (req) => {
-    const { country } = await req.json();
+    // const { country } = await req.json();
 
     if (!country) return new Response(JSON.stringify(["World", "Morocco", "Algeria"])); // epsg.map(item => item.country)
 
