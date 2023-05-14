@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "omar": "next -p 5000"
   },
   "dependencies": {
+    "ol": "^7.3.0",
+    "proj4": "^2.9.0",
     "autoprefixer": "10.4.14",
     "next": "13.4.2",
     "postcss": "8.4.23",
