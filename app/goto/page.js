@@ -27,6 +27,8 @@ const Goto = () => {
   const [isGPSActive, setIsGPSActive] = useState(false);
   const [target, setTarget] = useState([]);
 
+  console.log(epsg);
+
   useEffect(() => {
     getEPSGData()
     .then(r => setEpsg(p => ({...p, ...r})))
@@ -44,7 +46,7 @@ const Goto = () => {
   }, [gotoData.country])
 
   if (!epsg.countries.length || !epsg.projSys.length) return null;
-
+  console.log(epsg);
   const getPoint = () => {
     setTarget(proj4((epsg.projSys.find((proj) => proj.projName = gotoData.projName))?.projParams, 'EPSG:3857').forward([+gotoData.x, +gotoData.y]));
   }
