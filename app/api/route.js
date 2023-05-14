@@ -5393,9 +5393,9 @@ export const POST = async (req) => {
     try {
         const { country } = await req.json();
 
-        if (!country) return new Response(JSON.stringify(epsg.map(item => item.country)));
+        if (!country) return new Response(JSON.stringify(Array.from(new Set(epsg.map(item => item.country)))));
 
-        return new Response(JSON.stringify(epsg.filter(item => item.country === country)));
+        return new Response(JSON.stringify({projSys: epsg.filter(item => item.country === country)}));
     } catch (error) {
         return new Response(error, { status: 500 });
     }
