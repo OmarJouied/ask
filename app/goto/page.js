@@ -16,7 +16,7 @@ const Goto = () => {
     x: "",
     y: "",
     country: 'World',
-    projName: ''
+    proj_name: ''
   });
 
   const [epsg, setEpsg] = useState({
@@ -26,8 +26,6 @@ const Goto = () => {
 
   const [isGPSActive, setIsGPSActive] = useState(false);
   const [target, setTarget] = useState([]);
-
-  console.log(epsg);
 
   useEffect(() => {
     getEPSGData()
@@ -40,15 +38,15 @@ const Goto = () => {
       getEPSGData(gotoData.country)
       .then(r => {
         setEpsg(p => ({...p, ...r}));
-        setGotoData(p => ({...p, projName: r?.projSys[0].projName}));
+        setGotoData(p => ({...p, proj_name: r?.projSys[0].proj_name}));
       })
       .catch(err => console.log(err));
   }, [gotoData.country])
 
   if (!epsg.countries.length || !epsg.projSys.length) return null;
-  console.log(epsg);
+
   const getPoint = () => {
-    setTarget(proj4((epsg.projSys.find((proj) => proj.projName = gotoData.projName))?.projParams, 'EPSG:3857').forward([+gotoData.x, +gotoData.y]));
+    setTarget(proj4((epsg.projSys.find((proj) => proj.proj_name = gotoData.proj_name))?.proj_params, 'EPSG:3857').forward([+gotoData.x, +gotoData.y]));
   }
 
   const activeGPS = () => {
@@ -62,7 +60,7 @@ const Goto = () => {
             <div className="map-inputs">
                 <div className="map-inputs__kernal">
                     <InputSelect name='country' placeholder={'country'} options={epsg.countries.map((country) => country.country)} value={gotoData.country} setValue={setGotoData} />
-                    <InputSelect name='projName' placeholder={'projection system'} options={epsg.projSys.map((proj) => proj.projName)} value={gotoData.projName} setValue={setGotoData} />
+                    <InputSelect name='proj_name' placeholder={'projection system'} options={epsg.projSys.map((proj) => proj.proj_name)} value={gotoData.proj_name} setValue={setGotoData} />
                 </div>
                 <div className="map-inputs__coordinates">
                     <Input name='x' placeholder='X axes' value={gotoData.x} setValue={setGotoData} />
