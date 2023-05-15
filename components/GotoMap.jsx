@@ -82,7 +82,6 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
       vectSource.addFeature(startPosition);
       vectSource.addFeature(new Feature({ geometry: new Point(target) }));
 
-      console.log(position, target);
     }
   }, [target]);
 
@@ -112,11 +111,20 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
       // el('heading').innerText = geolocation.getHeading() + ' [rad]';
       // el('speed').innerText = geolocation.getSpeed() + ' [m/s]';
 
-      console.log(geolocation.getAccuracy() + ' [m]');
-      console.log(geolocation.getAltitude() + ' [m]');
-      console.log(geolocation.getAltitudeAccuracy() + ' [m]');
-      console.log(geolocation.getHeading() + ' [rad]');
-      console.log(geolocation.getSpeed() + ' [m/s]');
+      const accuracy = geolocation.getAccuracy() && geolocation.getAccuracy() + ' [m]';
+      const altitude = geolocation.getAltitude() && geolocation.getAltitude() + ' [m]';
+      const altitudeAccuracy = geolocation.getAltitudeAccuracy() && geolocation.getAltitudeAccuracy() + ' [m]';
+      const heading = geolocation.getHeading() && geolocation.getHeading() + ' [rad]';
+      const speed = geolocation.getSpeed() && geolocation.getSpeed() + ' [m/s]';
+
+      setMovingInfo(prev => ({
+        ...prev,
+        accuracy,
+        altitude,
+        altitudeAccuracy,
+        heading,
+        speed,
+      }))
       
     });
     
