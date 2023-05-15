@@ -11,7 +11,7 @@ import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import styles from "@/styles/Map.module.css";
 import { LineString } from 'ol/geom';
 import proj4 from 'proj4';
-import { arrowSelect } from '@/images';
+import { arrowSelect, compass } from '@/images';
 
 const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 
@@ -141,8 +141,10 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
     geolocation.on('change:position', function () {
       const coordinates = geolocation.getPosition();
       GPSFeature.setGeometry(coordinates ? new Point(coordinates) : null);
-      view.setCenter(coordinates);
-      view.setZoom(9);
+      if (view.getZoom() !== 9) {
+        view.setCenter(coordinates);
+        view.setZoom(9);
+      }
 
       if (target.length)
         fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&start=${coordinates[0]},${coordinates[1]}&end=${target[0]},${target[1]}`)
@@ -165,6 +167,17 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
             <div className="moving-info__details">
               <MovingInfoDetails><span>distance:</span><span>{' ' + (+movingInfo?.distance / 1000).toFixed(2) + " km"}</span></MovingInfoDetails>
               <MovingInfoDetails><span>duration:</span><span>{' ' + (+movingInfo?.duration / 3600).toFixed(2) + " h"}</span></MovingInfoDetails>
+              <MovingInfoDetails><span>heading:</span><span>{' ' + movingInfo?.heading + " rad"}</span></MovingInfoDetails>
+              <MovingInfoDetails><span>speed:</span><span>{' ' + (movingInfo?.speed || 0) + " m/s"}</span></MovingInfoDetails>
+            </div>
+          )
+        }
+        {
+          movingInfo && (
+            <div className="moving-info__details">
+              <div>
+                <img src={compass.src} alt="compass icon" />
+              </div>
             </div>
           )
         }
