@@ -167,8 +167,8 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
             <div className="moving-info__details">
               <MovingInfoDetails><span>distance:</span><span>{' ' + (+movingInfo?.distance / 1000).toFixed(2) + " km"}</span></MovingInfoDetails>
               <MovingInfoDetails><span>duration:</span><span>{' ' + (+movingInfo?.duration / 3600).toFixed(2) + " h"}</span></MovingInfoDetails>
-              <MovingInfoDetails><span>heading:</span><span>{' ' + +movingInfo?.heading + " rad"}</span></MovingInfoDetails>
-              <MovingInfoDetails><span>speed:</span><span>{' ' + +movingInfo?.speed + " m/s"}</span></MovingInfoDetails>
+              <MovingInfoDetails><span>heading:</span><span>{' ' + movingInfo?.heading + " rad"}</span></MovingInfoDetails>
+              <MovingInfoDetails><span>speed:</span><span>{' ' + (movingInfo?.speed || 0) + " m/s"}</span></MovingInfoDetails>
             </div>
           )
         }
