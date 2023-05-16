@@ -12,6 +12,7 @@ import styles from "@/styles/Map.module.css";
 import { LineString } from 'ol/geom';
 import proj4 from 'proj4';
 import { arrowSelect, compass } from '@/images';
+import timeFormatter from '@/utils/timeFormatter.js';
 
 const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 
@@ -169,6 +170,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
               <MovingInfoDetails><span>duration:</span><span>{' ' + (+movingInfo?.duration / 3600).toFixed(2) + " h"}</span></MovingInfoDetails>
               <MovingInfoDetails><span>heading:</span><span>{' ' + movingInfo?.heading + " rad"}</span></MovingInfoDetails>
               <MovingInfoDetails><span>speed:</span><span>{' ' + (movingInfo?.speed || 0) + " m/s"}</span></MovingInfoDetails>
+              time rest:{" "}{ timeFormatter(geolocation.getSpeed() ? +movingInfo?.distance / geolocation.getSpeed() : +movingInfo?.duration) }
             </div>
           )
         }
@@ -176,7 +178,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
           movingInfo && (
             <div className="moving-info__details">
               <div>
-                <img src={compass.src} alt="compass icon" />
+                {/* <img src={compass.src} alt="compass icon" /> */}
               </div>
             </div>
           )
