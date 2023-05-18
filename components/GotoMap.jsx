@@ -121,7 +121,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
     geolocation.on('change:position', function () {
       const coordinates = geolocation.getPosition();
       GPSFeature.setGeometry(coordinates ? new Point(coordinates) : null);
-      if (view.getZoom() !== 13) {
+      if (geolocation.getRevision() === 0) {
         view.setCenter(coordinates);
         view.setZoom(13);
       }
