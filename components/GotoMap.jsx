@@ -33,6 +33,8 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 
       const position = geolocation.getPosition();
 
+      if (!position) return;
+
       const start = proj4('EPSG:3857', 'EPSG:4326').forward(position);
       const end = proj4('EPSG:3857', 'EPSG:4326').forward(target);
 
@@ -57,30 +59,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
         vectSource.addFeature(routeFeature);
       });
 
-      const startPosition = new Feature({ geometry: new Point(position) });
-      startPosition.setStyle(
-        new Style({
-          fill: new Fill({
-            color: '#0084ff',
-          }),
-          stroke: new Stroke({
-            color: '#ff00ff',
-            width: 4,
-          }),
-        })
-      )
-
-      const lineFeature = new Feature({ geometry: new LineString([target, position]) });
-      lineFeature.setStyle(
-        new Style({
-          stroke: new Stroke({
-            color: '#0084ff',
-            width: 2,
-          }),
-        })
-      );
-
-      vectSource.addFeature(startPosition);
+      vectSource.addFeature(new Feature({ geometry: new Point(position) }));
       vectSource.addFeature(new Feature({ geometry: new Point(target) }));
 
     }
@@ -142,9 +121,9 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
     geolocation.on('change:position', function () {
       const coordinates = geolocation.getPosition();
       GPSFeature.setGeometry(coordinates ? new Point(coordinates) : null);
-      if (view.getZoom() !== 9) {
+      if (view.getZoom() !== 13) {
         view.setCenter(coordinates);
-        view.setZoom(9);
+        view.setZoom(13);
       }
 
       if (target.length)
