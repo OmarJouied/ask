@@ -4,7 +4,7 @@ import Geolocation from 'ol/Geolocation.js';
 import Map from 'ol/Map.js';
 import Point from 'ol/geom/Point.js';
 import View from 'ol/View.js';
-import { Stroke, Style} from 'ol/style.js';
+import { Stroke, Style, Icon} from 'ol/style.js';
 import {OSM, Vector as VectorSource} from 'ol/source.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 
