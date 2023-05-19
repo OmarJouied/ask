@@ -4,7 +4,7 @@ import Geolocation from 'ol/Geolocation.js';
 import Map from 'ol/Map.js';
 import Point from 'ol/geom/Point.js';
 import View from 'ol/View.js';
-import { Fill, Stroke, Style} from 'ol/style.js';
+import { Stroke, Style} from 'ol/style.js';
 import {OSM, Vector as VectorSource} from 'ol/source.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 
@@ -21,6 +21,8 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
   const [vectSource] = useState(new VectorSource({ features: [GPSFeature] }));
 
   const [vectLayer] = useState(new VectorLayer({ source: vectSource }));
+
+  const [image, setImage] = useState(new Icon({ anchor: [.5, 24.5], anchorXUnits: 'fraction', anchorYUnits: 'pixels', src: 'images/geolocation_marker_heading.png' }));
 
   const [view] = useState(new View({ center: [0, 0], zoom: 2, projection: "EPSG:3857" }));
 
@@ -59,7 +61,12 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
         vectSource.addFeature(routeFeature);
       });
 
-      vectSource.addFeature(new Feature({ geometry: new Point(position) }));
+      const iconStyle = new Style({ image });
+
+      const iconFeature = new Feature({ geometry: new Point(position) });
+      iconFeature.setStyle(iconStyle);
+
+      vectSource.addFeature(iconFeature);
       vectSource.addFeature(new Feature({ geometry: new Point(target) }));
 
     }
@@ -94,15 +101,16 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
       const accuracy = geolocation.getAccuracy() && geolocation.getAccuracy() + ' [m]';
       const altitude = geolocation.getAltitude() && geolocation.getAltitude() + ' [m]';
       const altitudeAccuracy = geolocation.getAltitudeAccuracy() && geolocation.getAltitudeAccuracy() + ' [m]';
-      const heading = geolocation.getHeading();
-      const speed = geolocation.getSpeed();
+      const heading = +(geolocation.getHeading() ?? 0).toFixed(2);
+      const speed = +(geolocation.getSpeed() ?? 0).toFixed(2);
+
+      image.setRotation(heading);
 
       setMovingInfo(prev => ({
         ...prev,
         accuracy,
         altitude,
         altitudeAccuracy,
-        heading,
         speed,
       }))
       
@@ -139,28 +147,23 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
     <>
       <div id="map"  className={`${styles.mapContainer} ol-zoom`}><span></span></div>
       <div className="moving-info">
-        <button disabled={!movingInfo}>
+        <label htmlFor='userInfo'>
           <img src={arrowSelect.src} alt="arrow" />
-        </button>
+        </label>
+        <input type='checkbox' id='userInfo' disabled={!movingInfo} />
+        <div className="moving-info__details">
+          <MovingInfoDetails><span>distance:&nbsp;</span><span>{(+movingInfo?.distance / 1000).toFixed(2) + " km"}</span></MovingInfoDetails>
+          <MovingInfoDetails><span>duration:&nbsp;</span><span>{timeFormatter(movingInfo?.speed ? +movingInfo?.distance / geolocation.getSpeed() : +movingInfo?.duration) }</span></MovingInfoDetails>
+          <MovingInfoDetails><span>speed:&nbsp;</span><span>{movingInfo?.speed + " m/s"}</span></MovingInfoDetails>
+        </div>
         {
-          movingInfo && (
-            <div className="moving-info__details">
-              <MovingInfoDetails><span>distance:</span><span>{' ' + (+movingInfo?.distance / 1000).toFixed(2) + " km"}</span></MovingInfoDetails>
-              <MovingInfoDetails><span>duration:</span><span>{' ' + (+movingInfo?.duration / 3600).toFixed(2) + " h"}</span></MovingInfoDetails>
-              <MovingInfoDetails><span>heading:</span><span>{' ' + movingInfo?.heading + " rad"}</span></MovingInfoDetails>
-              <MovingInfoDetails><span>speed:</span><span>{' ' + (movingInfo?.speed || 0) + " m/s"}</span></MovingInfoDetails>
-              time rest:{" "}{ timeFormatter(geolocation.getSpeed() ? +movingInfo?.distance / geolocation.getSpeed() : +movingInfo?.duration) }
-            </div>
-          )
-        }
-        {
-          movingInfo && (
-            <div className="moving-info__details">
-              <div>
-                {/* <img src={compass.src} alt="compass icon" /> */}
-              </div>
-            </div>
-          )
+          // movingInfo && (
+          //   <div className="moving-info__details">
+          //     <div>
+          //       {/* <img src={compass.src} alt="compass icon" /> */}
+          //     </div>
+          //   </div>
+          // )
         }
         
       </div>
@@ -171,7 +174,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 export default GotoMap;
 
 const MovingInfoDetails = ({ children }) => (
-  <div className="duration" onClick={() => console.log("children.toString()")}>
+  <div className="duration" onClick={() => navigator.clipboard.writeText(children[1].props.children)}>
     {children}
   </div>
 )
