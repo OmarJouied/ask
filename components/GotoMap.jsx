@@ -24,6 +24,8 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 
   const [image, setImage] = useState(new Icon({ anchor: [.5, 24.5], anchorXUnits: 'fraction', anchorYUnits: 'pixels', src: 'geolocation_marker_heading.png' }));
 
+  const [iconStyle, setIconStyle] = useState(new Style({ image }));
+
   const [view] = useState(new View({ center: [0, 0], zoom: 2, projection: "EPSG:3857" }));
 
   const [geolocation] = useState(new Geolocation({ trackingOptions: { enableHighAccuracy: true }, projection: view.getProjection() }));
@@ -61,10 +63,10 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
         vectSource.addFeature(routeFeature);
       });
 
-      const iconStyle = new Style({ image });
+      // const iconStyle = new Style({ image });
 
       const iconFeature = new Feature({ geometry: new Point(position) });
-      iconFeature.setStyle(iconStyle);
+      // iconFeature.setStyle(iconStyle);
 
       vectSource.addFeature(iconFeature);
       vectSource.addFeature(new Feature({ geometry: new Point(target) }));
@@ -129,6 +131,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
     geolocation.on('change:position', function () {
       const coordinates = geolocation.getPosition();
       GPSFeature.setGeometry(coordinates ? new Point(coordinates) : null);
+      GPSFeature.setStyle(iconStyle);
       if (geolocation.getRevision() === 0) {
         view.setCenter(coordinates);
         view.setZoom(13);
