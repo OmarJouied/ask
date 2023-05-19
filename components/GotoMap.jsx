@@ -22,7 +22,7 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 
   const [vectLayer] = useState(new VectorLayer({ source: vectSource }));
 
-  const [image, setImage] = useState(new Icon({ anchor: [.5, 24.5], anchorXUnits: 'fraction', anchorYUnits: 'pixels', src: 'images/geolocation_marker_heading.png' }));
+  const [image, setImage] = useState(new Icon({ anchor: [.5, 24.5], anchorXUnits: 'fraction', anchorYUnits: 'pixels', src: 'geolocation_marker_heading.png' }));
 
   const [view] = useState(new View({ center: [0, 0], zoom: 2, projection: "EPSG:3857" }));
 
