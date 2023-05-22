@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import proj4 from 'proj4';
 
-import GotoMap from '@/components/GotoMap'
-import Input from '@/components/Input'
-import InputSelect from '@/components/InputSelect'
+import { GotoMap, Input, InputSelect } from '@/components';
 import { search, location } from '@/images';
 
 import styles from '@/styles/goto.module.css';
@@ -26,6 +24,7 @@ const Goto = () => {
 
   const [isGPSActive, setIsGPSActive] = useState(false);
   const [target, setTarget] = useState([]);
+  const [isWithCoordinates, setIsWithCoordinates] = useState(true);
 
   useEffect(() => {
     getEPSGData()
@@ -45,18 +44,46 @@ const Goto = () => {
 
   if (!epsg.countries.length || !epsg.projSys.length) return null;
 
-  const getPoint = () => {
-    setTarget(proj4((epsg.projSys.find((proj) => proj.proj_name = gotoData.proj_name))?.proj_params, 'EPSG:3857').forward([+gotoData.x, +gotoData.y]));
+  const getPoint = async () => {
+    let addressCoordinates;
+
+    if (!isWithCoordinates) {
+      const res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&text=${encodeURIComponent(gotoData.x)}&size=1`);
+      addressCoordinates = await res.json();
+    }
+
+    setTarget(
+      proj4(
+        isWithCoordinates ? epsg.projSys.find(proj => proj.projName = gotoData.proj_name).proj_params : 'EPSG:4326',
+        'EPSG:3857'
+      ).forward(
+        isWithCoordinates ? [+gotoData.x, +gotoData.y] : addressCoordinates.features[0].geometry.coordinates
+    ));
   }
 
   const activeGPS = () => {
     setIsGPSActive(p => !p);
   }
 
+  const switchRadiosHandler = (value) => {
+    setIsWithCoordinates(value);
+    setGotoData(p => ({...p, x: "", y: ""}));
+  }
+
   return (
     <div className={styles.goto}>
         <GotoMap isGPSActive={isGPSActive} setIsGPSActive={setIsGPSActive} target={target} />
         <form>
+            <div className="map-type-search-switch">
+              <label>
+                coordinates
+                <input type="radio" checked={isWithCoordinates} name="type-search" id="" onChange={() => switchRadiosHandler(true)} />
+              </label>
+              <label>
+                address
+                <input type="radio" checked={!isWithCoordinates} name="type-search" id="" onChange={() => switchRadiosHandler(false)} />
+              </label>
+            </div>
             <div className="map-inputs">
                 <div className="map-inputs__kernal">
                     <InputSelect name='country' placeholder={'country'} options={epsg.countries.map((country) => country.country)} value={gotoData.country} setValue={setGotoData} />

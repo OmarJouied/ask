@@ -11,8 +11,9 @@ import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import styles from "@/styles/Map.module.css";
 import { LineString } from 'ol/geom';
 import proj4 from 'proj4';
-import { arrowSelect, compass } from '@/images';
+import { arrowSelect } from '@/images';
 import timeFormatter from '@/utils/timeFormatter.js';
+import distanceFormatter from '@/utils/distanceFormatter';
 
 const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
 
@@ -42,16 +43,27 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
       const start = proj4('EPSG:3857', 'EPSG:4326').forward(position);
       const end = proj4('EPSG:3857', 'EPSG:4326').forward(target);
 
-      fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`)
-      .then(r => r.json()).then(r => {
-        setMovingInfo({
-          ...r.features[0].properties.summary
-        })
-        const route = new LineString(r.features[0].geometry.coordinates);
-        route.transform('EPSG:4326', 'EPSG:3857');
+      (async () => {
+        // convert address to ccordinates await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&text=tanger&size=1`);
+        const car = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`);
+        const carData = await car.json();
 
-        const routeFeature = new Feature(route);
-        routeFeature.setStyle(
+        setMovingInfo({
+          ...carData.features[0].properties.summary
+        })
+
+        const cycling = await fetch(`https://api.openrouteservice.org/v2/directions/cycling-electric?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`);
+        const cyclingData = await cycling.json();
+
+        // const t = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&text=${'طنجة%20البالية'}&size=1`);
+        // const tData = await t.json();
+        // vectSource.addFeature(new Feature({ geometry: new Point(proj4('EPSG:4326', 'EPSG:3857').forward(tData.features[0].geometry.coordinates)) }));
+
+        const routeRecommended = new LineString(carData.features[0].geometry.coordinates);
+        routeRecommended.transform('EPSG:4326', 'EPSG:3857');
+
+        const routeFeatureRecommended = new Feature(routeRecommended);
+        routeFeatureRecommended.setStyle(
           new Style({
             stroke: new Stroke({
               color: "#03f703",
@@ -59,17 +71,33 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
             })
           })
         )
-        
-        vectSource.addFeature(routeFeature);
-      });
 
-      // const iconStyle = new Style({ image });
+        const routeAlternative = new LineString(cyclingData.features[0].geometry.coordinates);
+        routeAlternative.transform('EPSG:4326', 'EPSG:3857');
+
+        const routeFeatureAlternative = new Feature(routeAlternative);
+        routeFeatureAlternative.setStyle(
+          new Style({
+            stroke: new Stroke({
+              color: "#f63c3c",
+              width: 4,
+            }),
+            // text: new Text({
+            //   text: "omar"
+            // })
+          })
+        )
+        
+        vectSource.addFeature(routeFeatureRecommended);
+        vectSource.addFeature(routeFeatureAlternative);
+      })();
 
       const iconFeature = new Feature({ geometry: new Point(position) });
-      // iconFeature.setStyle(iconStyle);
 
       vectSource.addFeature(iconFeature);
       vectSource.addFeature(new Feature({ geometry: new Point(target) }));
+
+      view.setCenter(target);
 
     }
   }, [target]);
@@ -134,14 +162,14 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
       GPSFeature.setStyle(iconStyle);
       if (geolocation.getRevision() === 0) {
         view.setCenter(coordinates);
-        view.setZoom(13);
+        view.setZoom(18);
       }
 
-      if (target.length)
-        fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&start=${coordinates[0]},${coordinates[1]}&end=${target[0]},${target[1]}`)
-        .then(r => r.json()).then(r => {
-          console.log(r.features[0].properties.summary);
-        });
+      // if (target.length)
+      //   fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${process.env.NEXT_PUBLIC_CARTONOVAROUTESTOKEN}&start=${coordinates[0]},${coordinates[1]}&end=${target[0]},${target[1]}`)
+      //   .then(r => r.json()).then(r => {
+      //     console.log(r.features[0].properties.summary);
+      //   });
     });
 
   }, []);
@@ -155,8 +183,8 @@ const GotoMap = ({ isGPSActive, setIsGPSActive, target }) => {
         </label>
         <input type='checkbox' id='userInfo' disabled={!movingInfo} />
         <div className="moving-info__details">
-          <MovingInfoDetails><span>distance:&nbsp;</span><span>{(+movingInfo?.distance / 1000).toFixed(2) + " km"}</span></MovingInfoDetails>
-          <MovingInfoDetails><span>duration:&nbsp;</span><span>{timeFormatter(movingInfo?.speed ? +movingInfo?.distance / geolocation.getSpeed() : +movingInfo?.duration) }</span></MovingInfoDetails>
+          <MovingInfoDetails><span>distance:&nbsp;</span><span>{distanceFormatter(+movingInfo?.distance)}</span></MovingInfoDetails>
+          <MovingInfoDetails><span>duration:&nbsp;</span><span>{timeFormatter(movingInfo?.speed ? +movingInfo?.distance / movingInfo?.speed : +movingInfo?.duration) }</span></MovingInfoDetails>
           <MovingInfoDetails><span>speed:&nbsp;</span><span>{movingInfo?.speed + " m/s"}</span></MovingInfoDetails>
         </div>
         {
