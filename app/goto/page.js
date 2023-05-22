@@ -90,8 +90,8 @@ const Goto = () => {
                     <InputSelect name='proj_name' placeholder={'projection system'} options={epsg.projSys.map((proj) => proj.proj_name)} value={gotoData.proj_name} setValue={setGotoData} />
                 </div>
                 <div className="map-inputs__coordinates">
-                    <Input name='x' placeholder='X axes' value={gotoData.x} setValue={setGotoData} />
-                    <Input name='y' placeholder='Y axes' value={gotoData.y} setValue={setGotoData} />
+                    <Input name='x' placeholder={isWithCoordinates ? 'X axes' : 'address'} value={gotoData.x} setValue={setGotoData} />
+                    {isWithCoordinates && <Input name='y' placeholder='Y axes' value={gotoData.y} setValue={setGotoData} />}
                 </div>
             </div>
             <div className="map-btns">
